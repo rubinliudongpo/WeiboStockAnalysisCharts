@@ -14,7 +14,7 @@ def parse_args():
     _help_ = 'set weibo filter flag:' \
              'if filter is 0, then weibos are all original;' \
              'if 1, it will contain re-post weibos. default is 0.'
-    parser.add_argument('-f', '--filter', default='1', help=_help_)
+    parser.add_argument('-f', '--filter', default='0', help=_help_)
 
     _help_ = 'set update weibo cookie:' \
              'set 1 to enable updating cookie' \
@@ -27,7 +27,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-
     filter_flag = False
     if args.filter:
         filter_flag = True if args.filter == "1" else False

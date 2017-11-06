@@ -1,0 +1,12 @@
+# Intellij project files
+.idea/*
+
+*.pyc
+*.pyo
+__pycache__/
+
+WeiboData/Gui/class.json
+WeiboData/Gui/time
+Config/Cookies.pkl
+ghostdriver.log
+
