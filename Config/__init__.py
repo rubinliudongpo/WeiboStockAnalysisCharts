@@ -7,8 +7,8 @@ PHANTOM_JS_PATH = '/usr/bin/phantomjs'
 COOKIES_SAVE_PATH = '../../Config/Cookies.pkl'
 accounts = [
     {
-        "id": 'freshmaned@hotmail.com',
-        "password": 'Qq197701',
+        "id": '',
+        "password": '',
     },
 ]
 
