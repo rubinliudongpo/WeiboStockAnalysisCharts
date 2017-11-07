@@ -12,12 +12,14 @@ class Dispatcher(object):
     Dispatcher, if your cookies is out of date, set update_cookies to True to
     update all accounts cookies
     """
-    def __init__(self, uid, filter_flag=False, update_cookies=False):
+    def __init__(self, uid, start_date, end_date, filter_flag=False, update_cookies=False):
         self.filter_flag = filter_flag
         self.update_cookies = update_cookies
         self._init_accounts_cookies()
         self._init_accounts()
         self.user_id = uid
+        self.start_date = start_date
+        self.end_date = end_date
 
     def execute(self):
         self._execute()
@@ -59,7 +61,8 @@ class Dispatcher(object):
             print('error:no cookies file.')
       
     def _execute(self):
-        scraper = WeiboSpider(using_account=self.all_accounts[0], uuid=self.user_id, filter_flag=self.filter_flag)
+        scraper = WeiboSpider(using_account=self.all_accounts[0], uuid=self.user_id, start_date=self.start_date,
+                              end_date=self.end_date, filter_flag=self.filter_flag)
         i = 1
         while True:
             result = scraper.crawl()

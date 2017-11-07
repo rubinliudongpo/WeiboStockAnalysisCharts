@@ -2,14 +2,14 @@
 from __future__ import print_function
 import os, sys, sip, time
 from datetime import datetime,timedelta
-from qtpy.QtWidgets import QTreeWidgetItem, QMenu, QApplication, QAction, QMainWindow
+from qtpy.QtWidgets import QTreeWidgetItem, QMenu, QApplication, QAction, QMainWindow, QMessageBox
 from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt, QUrl, QDate
 from WeiboData.Gui.Graph import stock_render_page
 from WeiboData.Gui.Layout import Ui_Main_Window
 from WeiboData.Core.Dispatcher import Dispatcher
-from Config import DEFAULT_WEIBO_ID
-
+import pymysql
+from Config import DB_HOST, DB_PORT, DB_USER, DB_PASSWD, DB_NAME, DB_CHARSET, STOCK_SEARCH_BY_WEIBOID
 from pandas import DataFrame as df
 import pandas as pd
 import tushare as ts
@@ -24,129 +24,72 @@ class MyUi(QMainWindow):
     def __init__(self):
         super(MyUi, self).__init__()
         self.ui = Ui_Main_Window()
+        self.connection = None
         self.ui.setup_ui(self)
-        cwd = str(os.getcwd())
+        self._init_db()
+        self.ui.stocks_tree.clear()
         self.ui.search_btn.clicked.connect(lambda: self.search_weibo())
-
-        # cwd = str(cwd)
-        # if os.path.isfile(cwd+"/time"):
-        #     with open("time","rb") as outfile:#reads current time
-        #         history = cPickle.load(outfile)
-        #     if (datetime.now()-history).total_seconds()<43200: #measures if time elapse>12 hours
-        #         print("Less than 12 hours. Loading previously saved Pickle...")
-        #         #with open("time","w") as infile: #update time
-        #             #cPickle.dump(datetime.now(),infile)
-        #     else:
-        #         print("More than 12 hours. Updating Pickle...")
-        #         data = ts.get_industry_classified()
-        #         with open("class","w+") as outfile:
-        #             cPickle.dump(data,outfile, protocol=2)
-        #         now = datetime.now()
-        #         with open("time", "w+") as outfile: #update time
-        #             cPickle.dump(now, outfile, protocol=2)
-        # else:
-        #     print("No json found!") #If this is first time using tuchart in this directory
-        #     data = df()
-        #     data = ts.get_industry_classified()
-        #     #var = data.to_json(cwd+"/class.json",orient="columns")
-        #     with open('class.json', 'wb+') as outfile: #records json
-        #         cPickle.dump(data, outfile)
-        #     now = datetime.now()
-        #     with open("time", "wb+") as outfile:
-        #         cPickle.dump(now,outfile)
-        #
-        # with open("class.json", "rb") as infile:  # reads current time
-        #     series = cPickle.load(infile)
-        # #series = pd.read_json(cwd + "\\class.json")
-        # #series = ts.get_industry_classified()
-        # series = pd.DataFrame(series)
-        current_date = time.strftime("%Y/%m/%d") #gets current time to put into dateedit
-        date_obj = datetime.strptime(current_date, "%Y/%m/%d")#converts to datetime object
-        past = date_obj - timedelta(days = 7)  #minus a week to start date
+        current_date = time.strftime("%Y/%m/%d")
+        date_obj = datetime.strptime(current_date, "%Y/%m/%d")
+        past = date_obj - timedelta(days = 7)
         past_time = datetime.strftime(past, "%Y/%m/%d")
-        QPast = QDate.fromString(past_time,"yyyy/MM/dd") #convert to qtime so that widget accepts the values
+        QPast = QDate.fromString(past_time,"yyyy/MM/dd")
         Qcurdate = QDate.fromString(current_date,"yyyy/MM/dd")
-        # list1 = series["c_name"].tolist()  #Get industry categories. Filters out redundant ones
-        # list1 = list(set(list1))
-        # #w = database()
-        # #zsparent = QTreeWidgetItem(self.ui.treeWidget)
-        # #zsparent.setText(0,"股票指数")
-        # #zsnames =["上证指数-sh","深圳成指-sz","沪深300指数-hs300","上证50-"]
-        # zsparent = QTreeWidgetItem(self.ui.treeWidget)
-        # zsparent.setText(0, "股票指数")
-        # zsnames = ["上证指数-sh", "深圳成指-sz", "沪深300指数-hs300", "上证50-sz50", "中小板-zxb", "创业板-cyb"]
-        # for k in zsnames:
-        #     child = QTreeWidgetItem(zsparent)
-        #     child.setText(0, k)
-        # for j in list1:
-        #     parent = QTreeWidgetItem(self.ui.treeWidget)  #populate treewidget with names
-        #     parent.setText(0,j)
-        #     var = series.loc[series["c_name"] == j]
-        #     list2 = var["code"].tolist()
-        #     name = var["name"].tolist()
-        #     #var = showcollection(i) #Display database items
-        #     for idx,val in enumerate(list2):
-        #         child = QTreeWidgetItem(parent)
-        #         child.setText(0, name[idx]+"-"+str(val))
-        #         #for i in Drag:
-        #             #grandson = QTreeWidgetItem(child)     #Commented out because increases program response time
-        #             #grandson.setText(0, i)
-        # #self.ui.treeWidget.itemDoubleClicked.connect(self.onClickItem) #Display Collection items
-        # self.ui.treeWidget.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.ui.treeWidget.customContextMenuRequested.connect(self.openMenu)
-        # #self.ui.widget.setGeometry(QtCore.QRect(0, 30,1550, 861))
-        # file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "render.html")) #path to read html file
-        # local_url = QUrl.fromLocalFile(file_path)
-        # self.ui.webView.load(local_url)
-        # # self.ui.pushButton.setFixedSize(50, 50)
-        # self.ui.pushButton.clicked.connect(self.classify)  #when the arrow button is clicked, trigger events
-        # #self.ui.commandLinkButton.clicked.connect(lambda action: self.classify(action, self.ui.treewidget))
-        # #  QSizePolicy
-        # try:
-        #     retain_size = self.ui.dateEdit_2.sizePolicy()
-        #     retain_size.setRetainSizeWhenHidden(True)
-        #     self.ui.dateEdit_2.setSizePolicy(retain_size)
-        #     retain_size = self.ui.comboBox.sizePolicy()
-        #     retain_size.setRetainSizeWhenHidden(True)
-        #     self.ui.comboBox.setSizePolicy(retain_size)
-        #     retain_size = self.ui.label_2.sizePolicy()
-        #     retain_size.setRetainSizeWhenHidden(True)
-        #     self.ui.label_2.setSizePolicy(retain_size)
-        # except AttributeError:
-        #     print("No PYQT5 Binding! Widgets might be deformed")
+        self.ui.start_date_edit.setDate(QPast)
+        self.ui.end_date_edit.setDate(Qcurdate)
+        self.ui.start_date_edit.setCalendarPopup(True)
+        self.ui.end_date_edit.setCalendarPopup(True)
 
-        self.ui.dateEdit.setDate(QPast)
-        self.ui.dateEdit_2.setDate(Qcurdate)#populate widgets
-        self.ui.dateEdit.setCalendarPopup(True)
-        self.ui.dateEdit_2.setCalendarPopup(True)
-        # self.ui.comboBox.addItems(["D", "W", "M", "5", "15", "30", "60"])
-        # self.ui.treeWidget_2.setDragDropMode(self.ui.treeWidget_2.InternalMove)
-        # self.ui.treeWidget_2.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.ui.treeWidget_2.customContextMenuRequested.connect(self.openWidgetMenu)
-        #self.ui.toolbutton.clicked.connect(lambda action: self.graphmerge(action, CombineKeyword))
-        # self.ui.combobox.currentIndexChanged.connect(self.modifycombo)
+
+    def _init_db(self):
+        self.connection = pymysql.connect(host=DB_HOST, port=DB_PORT, user=DB_USER,
+                                              passwd=DB_PASSWD, db=DB_NAME, charset=DB_CHARSET)
 
     def search_weibo(self):
-        self.ui.treeWidget.clear()
-        # weibo_id = self.ui.search_edit_text.text()
-        weibo_id = "6004376285"
+        self.ui.stocks_tree.clear()
+        weibo_id = self.ui.search_edit_text.text()
+        start_date = self.ui.start_date_edit.date()
+        start_date = start_date.toPyDate()
+        start_date = start_date.strftime("%Y/%m/%d")
+        start_date = time.mktime(time.strptime(start_date, "%Y/%m/%d"))
+        end_date = self.ui.end_date_edit.date()
+        end_date = end_date.toPyDate()
+        end_date = end_date.strftime("%Y/%m/%d")
+        end_date = time.mktime(time.strptime(end_date, "%Y/%m/%d"))
+
         if weibo_id:
-            dispatcher = Dispatcher(uid=weibo_id, filter_flag=True, update_cookies=False)
+            dispatcher = Dispatcher(uid=weibo_id, start_date=start_date,
+                                    end_date=end_date, filter_flag=True,
+                                    update_cookies=False)
             dispatcher.execute()
         else:
-            print('please add weibo uid here.')
+            print('please input weibo uid here.')
 
-        # filtered_codes = companies[companies['code'].str.contains(text)]
-        # filtered_names = companies[companies['name'].str.contains(text)]
-        # filtered_comps = filtered_codes.append(filtered_names)
-        # code_list = filtered_comps["code"].tolist()
-        # name_list = filtered_comps["name"].tolist()
-        parent = QTreeWidgetItem(self.ui.treeWidget)
+        self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
+
+        stock_id_list = list()
+        stock_comments_list = list()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(STOCK_SEARCH_BY_WEIBOID, [weibo_id])
+                search_results = cursor.fetchall()
+                if len(search_results) > 0:
+
+                    for row in search_results:
+                        print(row[3], row[4], row[5])
+                        stock_id = row[3]
+                        stock_comments = row[4] + "" + row[5]
+                        stock_id_list.append(stock_id)
+                        stock_comments_list.append(stock_comments)
+        finally:
+            self.connection.close()
+        parent = QTreeWidgetItem(self.ui.stocks_tree)
         parent.setText(0, "搜索结果")
-        # for idx, val in enumerate(code_list):
-        #     child = QTreeWidgetItem(parent)
-        #     child.setText(0, name_list[idx] + "-" + str(val))
-        # self.ui.treeWidget.expandToDepth(0)
+        for i in range(len(stock_id_list)):
+            child = QTreeWidgetItem(parent)
+            child.setText(0, stock_id_list[i] + "-" + stock_comments_list[i])
+        self.ui.stocks_tree.expandToDepth(0)
 
 
     # def modifycombo(self):
@@ -200,22 +143,26 @@ class MyUi(QMainWindow):
     #     return 0
     #
     #
-    # def openWidgetMenu(self,position):
-    #     indexes = self.ui.treeWidget_2.selectedIndexes()
-    #     item = self.ui.treeWidget_2.itemAt(position)
-    #     if item == None:
-    #         return
-    #     #item = self.ui.listWidget.itemAt(position)
-    #     if len(indexes) > 0:
-    #         menu = QMenu()
-    #         menu.addAction(QAction("Delete", menu,checkable = True))#This function is perhaps useless
-    #         #menu.triggered.connect(self.eraseItem)
-    #         item = self.ui.treeWidget_2.itemAt(position)
-    #         #collec = str(item.text())
-    #         menu.triggered.connect(lambda action: self.ListMethodSelected(action, item))
-    #     menu.exec_(self.ui.treeWidget_2.viewport().mapToGlobal(position))
-    #
-    #
+
+    def onItemClick(self, item):
+        QMessageBox.information(self, "ListWidget", "You clicked: " + item.text())
+
+    def openWidgetMenu(self,position):
+        indexes = self.ui.stocks_tree.selectedIndexes()
+        item = self.ui.stocks_tree.itemAt(position)
+        if item == None:
+            return
+        if len(indexes) > 0:
+            menu = QMenu()
+            menu.addAction(QAction("Delete", menu, checkable = True))
+            #menu.triggered.connect(self.eraseItem)
+            item = self.ui.stocks_tree.itemAt(position)
+            # collec = str(item.text())
+            # print(collec)
+            menu.triggered.connect(lambda action: self.ListMethodSelected(action, item))
+            menu.exec_(self.ui.stocks_tree.viewport().mapToGlobal(position))
+            self.ui.stocks_tree.itemClicked.connect(self.onItemClick(item))
+
     # def ListMethodSelected(self, action, item):
     #     if action.text() == "Delete":
     #         self.eraseItem()

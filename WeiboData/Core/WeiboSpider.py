@@ -23,7 +23,7 @@ from WeiboData.Utilities.Utilities import encode_publish_time, is_number
 
 class WeiboSpider(object):
 
-    def __init__(self, using_account, uuid, filter_flag=False):
+    def __init__(self, using_account, uuid, start_date, end_date, filter_flag=False):
         self.using_account = using_account
         self.connection = None
         self._init_cookies()
@@ -31,6 +31,8 @@ class WeiboSpider(object):
         self._init_db()
 
         self.user_id = uuid
+        self.start_date = start_date
+        self.end_date = end_date
         self.filter = filter_flag
         self.weibo_scraped = 0
         self.weibo_detail_urls = []
@@ -124,6 +126,9 @@ class WeiboSpider(object):
                             publish_time = time_t[0].xpath('string(.)')
                             print(publish_time)
                             time_stamp = encode_publish_time(publish_time)
+                            if self.start_date > time_stamp:
+                                print("self.start_date > time_stamp")
+                                return
                             temp_list.append(str(time_stamp))
 
                             stock_recommendation_id_pattern = re.compile("#[\u4e00-\u9fa5]{3,}\s(s[h|z]\d{6})\[股票\]#")
