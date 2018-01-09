@@ -53,7 +53,7 @@ class Dispatcher(object):
             with open(COOKIES_SAVE_PATH, 'rb') as f:
                 cookies_dict = pickle.load(f)
             self.all_accounts = list(cookies_dict.keys())
-            print('----------- detected {} accounts, weibo_terminator will using all accounts to scrap '
+            print('----------- detected {} accounts, I will using all accounts to scrap '
                   'automatically -------------'.format(len(self.all_accounts)))
             print('detected accounts: ', self.all_accounts)
         except Exception as e:

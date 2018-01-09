@@ -14,8 +14,8 @@ accounts = [
 
 DB_HOST = "localhost"
 DB_PORT = 3306
-DB_USER = "weibostock"
-DB_PASSWD = "weiboassword"
+DB_USER = "weibouser"
+DB_PASSWD = "weibopassword"
 DB_NAME = "weibo_stocks"
 DB_CHARSET = "utf8"
 

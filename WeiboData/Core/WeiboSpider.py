@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-using guide:
-setting accounts first:
 
-under: weibo_terminator/settings/accounts.py
-you can set more than one accounts, WT will using all accounts one by one,
-if one banned, another will move on.
-
-if you care about security, using subsidiary accounts instead.
-
-"""
 import re
 import time
 import requests
@@ -116,9 +106,7 @@ class WeiboSpider(object):
                         for i in range(0, len(info) - 2):
                             temp_list = [self.user_id]
                             detail = info[i].xpath("@id")[0]
-                            self.weibo_detail_urls.append('http://weibo.cn/comment/{}?uid={}&rl=0'.
-                                                          format(detail.split('_')[-1], self.user_id))
-
+                            self.weibo_detail_urls.append('http://weibo.cn/comment/{}?uid={}&rl=0'.format(detail.split('_')[-1], self.user_id))
                             self.weibo_scraped += 1
                             str_t = info[i].xpath("div/span[@class='ctt']")
                             weibos = str_t[0].xpath('string(.)')
@@ -150,12 +138,15 @@ class WeiboSpider(object):
                                 with self.connection.cursor() as cursor:
                                     cursor.execute(STOCK_SEARCH_SQL, [temp_list[0], temp_list[2], temp_list[3], temp_list[4]])
                                     search_result = cursor.fetchall()
-                                    if len(search_result) == 0:
+                                    search_result_length = len(search_result)
+                                    if search_result_length == 0:
                                         try:
                                             cursor.execute(STOCK_INSERT_SQL, temp_list)
                                             self.connection.commit()
                                         except:
                                             self.connection.rollback()
+                            else:
+                                continue
 
             except etree.XMLSyntaxError as e:
                 print('get weibo info finished.')
