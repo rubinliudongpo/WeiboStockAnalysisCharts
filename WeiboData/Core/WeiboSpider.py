@@ -10,7 +10,6 @@ import pickle
 import pymysql
 from WeiboData.Utilities.Utilities import encode_publish_time, is_number
 
-
 class WeiboSpider(object):
 
     def __init__(self, using_account, uuid, start_date, end_date, filter_flag=False):
