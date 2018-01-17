@@ -29,9 +29,10 @@ def stock_render_page(stock_id, start_date, end_date, option, width, height):
     a = generate_stock_line(stock_id, "Kline", start_date, end_date, 'qfq')  # stock number, Type, startdate, enddate, 30 or 15 or days
     if a is None:
         return
-    time = [d[0] for d in a]  # get time from returned dictionary
-    if option == "Kline":
-        if len(a[0]) == 4 and a[0][2] == "bar":  # for 分笔data
+    time, open, close, low, high = zip(*a)  # get time from returned
+    option = "Kline"
+    if option != "Kline":
+        if len(time[0]) == 4 and time[0][2] == "bar":  # for 分笔data
             overlap = Overlap()
             form = [e[1] for e in a]
             bar = Bar("分笔", width=width * 10 / 11, height=(height * 10 / 11))
@@ -86,9 +87,8 @@ def stock_render_page(stock_id, start_date, end_date, option, width, height):
                      yaxis_max="dataMax")
             page.add(line)
     else:
-        overlap = Overlap()  # for k线
-        close = list(a)
-        candle = [[x[1], x[2], x[3], x[4]] for x in a]
+        overlap = Overlap()#for k线
+        candle = [open, close, low, high]
         candlestick = Kline("分笔", width=width * 10 / 11, height=(height * 10 / 11))
         candlestick.add("分笔", time, candle, is_datazoom_show=True, datazoom_type="slider", yaxis_interval=1)
         overlap.add(candlestick)
@@ -252,7 +252,8 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             Close = array["close"].tolist()
             High = array["high"].tolist()
             Low = array["low"].tolist()
-            Candlestick = zip(Date, Open, Close, Low, High)
+            # list_array = [Date, Open, Close, Low, High]
+            Candlestick = zip(*[Date, Open, Close, Low, High])
             return Candlestick
 
 def Mergegraph(stuff):
