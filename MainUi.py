@@ -111,7 +111,10 @@ class MyUi(QMainWindow):
         end_date = end_date.strftime("%Y/%m/%d")
         option = self.ui.stock_combobox.currentText()
         option = str(option)
-        stock_render_page(stock_id.group(1), start_date, end_date, 15, width, height)#labels:复权ork线or分笔 option:hfq, qfq or 15, 30, D, etc
+        interval = self.ui.interval_combobox.currentText()
+        interval = str(interval)
+        stock_info = stock_id.group(1) + '-' + option
+        stock_render_page(stock_info, start_date, end_date, interval, width, height)#labels:复权ork线or分笔 option:hfq, qfq or 15, 30, D, etc
         self.ui.webView.reload()#refreshes webengine
         self.ui.webView.repaint()
         self.ui.webView.update()

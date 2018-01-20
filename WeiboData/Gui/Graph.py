@@ -24,7 +24,7 @@ def calculate_month(data, Daycount):
     return result
 
 
-def stock_render_page(stock_id, start_date, end_date, option, width, height):
+def stock_render_page(stock_info, start_date, end_date, interval, width, height):
     page = Page()
     a = generate_stock_line(stock_id, "Kline", start_date, end_date, 'qfq')  # stock number, Type, startdate, enddate, 30 or 15 or days
     if a is None:
@@ -49,37 +49,33 @@ def stock_render_page(stock_id, start_date, end_date, option, width, height):
                      datazoom_type="slider",
                      yaxis_type="value")
             overlap.add(line, yaxis_index=1, is_add_yaxis=True)
-
             page.add(overlap)
-
         if len(a[0]) == 5 and a[0][3] == "pie":
             overlap = Overlap()
-            timeline = Timeline(is_auto_play=False, timeline_bottom=0)  # zip(namearray,valuearray,quarter,flag,num)
-            namearray = [c[0] for c in a]
-            valuearray = [d[1] for d in a]
+            time_line = Timeline(is_auto_play=False, timeline_bottom=0)  # zip(namearray,valuearray,quarter,flag,num)
+            name_array = [c[0] for c in a]
+            value_array = [d[1] for d in a]
             quarter = [e[2] for e in a]
             num = a[0][4]
 
             for x in range(0, num / 10):
-                list1 = valuearray[x]
-                names = namearray[x]
+                list1 = value_array[x]
+                names = name_array[x]
                 quarters = quarter[x][0]
 
                 for idx, val in enumerate(list1):
                     list1[idx] = float(val)
 
                 pie = Pie("前十股东", width=width * 10 / 11, height=(height * 10 / 11))
-
                 pie.add("前十股东", names, list1, radius=[30, 55], is_legend_show=False,
                         is_label_show=True, label_formatter="{b}: {c}\n{d}%")
                 # print list
                 # print names
                 # print quarterarray
 
-                timeline.add(pie, quarters)
+                time_line.add(pie, quarters)
                 # namearray = [y for y in namearray[x]]
-            timeline.render()
-
+            time_line.render()
             return
 
             # need more statement
@@ -115,12 +111,12 @@ def stock_render_page(stock_id, start_date, end_date, option, width, height):
 
 
 def generate_stock_line(stock_id, Type, start_date, end_date, interval):
-    startdata = start_date.replace("/","-").replace("\n","") #convert to tushare readable date
-    enddata = end_date.replace("/","-").replace("\n","")
+    start_data = start_date.replace("/","-").replace("\n","") #convert to tushare readable date
+    end_data = end_date.replace("/","-").replace("\n","")
     current_time = time.strftime("%Y/%m/%d")
     if Type ==  "分笔":
         if start_date!=current_time:
-            array = ts.get_tick_data(stock_id, date = startdata)#分笔
+            array = ts.get_tick_data(stock_id, date = start_data)#分笔
             if array is None:
                 return
             array = array.sort_values("time")
@@ -182,9 +178,9 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
 
     if interval!="qfq" and interval!="hfq":
         if interval=="1min" or interval=="5min" or interval=="15min" or interval=="30min" or interval=="60min":
-            df = ts.get_tick_data(stock_id, date=startdata)
+            df = ts.get_tick_data(stock_id, date=start_data)
             df.sort_values("time")
-            a = startdata + " " + df["time"]
+            a = start_data + " " + df["time"]
             df["time"] = a
             df["time"] = pd.to_datetime(a)
             df = df.set_index("time")
@@ -215,7 +211,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
 
         #正常历史k线
         if Type!="Kline":
-            array = ts.get_k_data(stock_id, start=startdata, end=enddata, ktype=interval)
+            array = ts.get_k_data(stock_id, start=start_data, end=end_data, ktype=interval)
             if array is None:
                 return
             Type1 = firstletter(Type).encode("ascii")
@@ -224,7 +220,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             returnarray = zip(date,target)
             return returnarray
         else:
-            array = ts.get_k_data(stock_id, start=startdata, end=enddata, ktype=interval)
+            array = ts.get_k_data(stock_id, start=start_data, end=end_data, ktype=interval)
             if array is None:
                 return
             Date = array["date"].tolist()
@@ -236,7 +232,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             return Candlestick
     else:
         if Type!="Kline": # 复权
-            array = ts.get_h_data(stock_id, start = startdata, end = enddata, autype= interval)
+            array = ts.get_h_data(stock_id, start = start_data, end = end_data, autype= interval)
             if array is None:
                 return
             Type1 = firstletter(Type).encode("ascii")
@@ -246,7 +242,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             returnarray = zip(date, target)
             return returnarray
         else :
-            array = ts.get_h_data(stock_id, start=startdata, end=enddata, autype=15)
+            array = ts.get_h_data(stock_id, start=start_data, end=end_data, autype=15)
             if array is None:
                 return
             array = array.sort_index()
