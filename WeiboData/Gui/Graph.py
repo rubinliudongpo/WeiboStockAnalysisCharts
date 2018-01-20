@@ -29,8 +29,11 @@ def stock_render_page(stock_id, start_date, end_date, option, width, height):
     a = generate_stock_line(stock_id, "Kline", start_date, end_date, 'qfq')  # stock number, Type, startdate, enddate, 30 or 15 or days
     if a is None:
         return
-    time, open, close, low, high = zip(*a)  # get time from returned
-    option = "Kline"
+    if option == "Kline":
+        time, open, close, low, high = zip(*a)  # get time from returned dictionary
+    else:
+        time, target = zip(*a)
+        a = [time, target]
     if option != "Kline":
         if len(time[0]) == 4 and time[0][2] == "bar":  # for 分笔data
             overlap = Overlap()
@@ -81,10 +84,10 @@ def stock_render_page(stock_id, start_date, end_date, option, width, height):
 
             # need more statement
         else:
-            form = [e[1] for e in a]  # for not分笔 data
             line = Line("分笔", width=width * 10 / 11, height=(height * 10 / 11))
-            line.add("分笔", time, form, is_datazoom_show=True, datazoom_type="slider", yaxis_min="dataMin",
+            line.add("分笔", time, target, is_datazoom_show=True, datazoom_type="slider", yaxis_min="dataMin",
                      yaxis_max="dataMax")
+            page.add(line)
             page.add(line)
     else:
         overlap = Overlap()#for k线
@@ -243,7 +246,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             returnarray = zip(date, target)
             return returnarray
         else :
-            array = ts.get_h_data(stock_id, start=startdata, end=enddata, autype=interval)
+            array = ts.get_h_data(stock_id, start=startdata, end=enddata, autype=15)
             if array is None:
                 return
             array = array.sort_index()
