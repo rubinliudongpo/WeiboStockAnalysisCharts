@@ -26,15 +26,17 @@ def calculate_month(data, Daycount):
 
 def stock_render_page(stock_info, start_date, end_date, interval, width, height):
     page = Page()
-    a = generate_stock_line(stock_id, "Kline", start_date, end_date, 'qfq')  # stock number, Type, startdate, enddate, 30 or 15 or days
+    stock_id = stock_info.split('-', 1)[0]
+    action = stock_info.split('-', 1)[1]
+    a = generate_stock_line(stock_id, action, start_date, end_date, interval)  # stock number, Type, startdate, enddate, 30 or 15 or days
     if a is None:
         return
-    if option == "Kline":
+    if action == "Kline":
         time, open, close, low, high = zip(*a)  # get time from returned dictionary
     else:
         time, target = zip(*a)
         a = [time, target]
-    if option != "Kline":
+    if action != "Kline":
         if len(time[0]) == 4 and time[0][2] == "bar":  # for 分笔data
             overlap = Overlap()
             form = [e[1] for e in a]
@@ -195,7 +197,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             newdf = price_df.merge(vol_df, left_index=True, right_index=True).merge(amount_df, left_index=True,
                                                                                 right_index=True)
             if Type != "Kline":
-                Type1 = firstletter(Type).encode("ascii")
+                Type1 = firstletter(Type)
                 target = newdf[Type1].tolist()
                 date = newdf.index.format()
                 returnarray = zip(date, target)
@@ -214,7 +216,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             array = ts.get_k_data(stock_id, start=start_data, end=end_data, ktype=interval)
             if array is None:
                 return
-            Type1 = firstletter(Type).encode("ascii")
+            Type1 = firstletter(Type)
             target = array[Type1].tolist()
             date = array["date"].tolist()
             returnarray = zip(date,target)
@@ -235,7 +237,7 @@ def generate_stock_line(stock_id, Type, start_date, end_date, interval):
             array = ts.get_h_data(stock_id, start = start_data, end = end_data, autype= interval)
             if array is None:
                 return
-            Type1 = firstletter(Type).encode("ascii")
+            Type1 = firstletter(Type)
             array = array.sort_index()
             target = array[Type1].tolist()
             date = array.index.format()

@@ -44,6 +44,7 @@ class MyUi(QMainWindow):
         self.ui.end_date_edit.setDate(Qcurdate)
         self.ui.start_date_edit.setCalendarPopup(True)
         self.ui.end_date_edit.setCalendarPopup(True)
+        self.choice = None
 
     def _init_db(self):
         self.connection = pymysql.connect(host=DB_HOST,
@@ -96,7 +97,7 @@ class MyUi(QMainWindow):
         self.ui.stocks_tree.expandToDepth(0)
 
 
-    def onItemClick(self, option):
+    def onItemClick(self, item):
         text = self.ui.stocks_tree.currentItem().text(0)
         stock_id_pattern = re.compile("(s[h|z]\d{6})-.*")
         stock_id = stock_id_pattern.search(text)
@@ -109,13 +110,13 @@ class MyUi(QMainWindow):
         end_date = self.ui.end_date_edit.date()
         end_date = end_date.toPyDate()
         end_date = end_date.strftime("%Y/%m/%d")
-        option = self.ui.stock_combobox.currentText()
-        option = str(option)
+        action = self.ui.stock_combobox.currentText()
+        action = str(action)
         interval = self.ui.interval_combobox.currentText()
         interval = str(interval)
-        stock_info = stock_id.group(1) + '-' + option
-        stock_render_page(stock_info, start_date, end_date, interval, width, height)#labels:复权ork线or分笔 option:hfq, qfq or 15, 30, D, etc
-        self.ui.webView.reload()#refreshes webengine
+        stock_info = stock_id.group(1) + '-' + self.choice
+        stock_render_page(stock_info, start_date, end_date, interval, width, height)
+        self.ui.webView.reload()
         self.ui.webView.repaint()
         self.ui.webView.update()
 
@@ -127,7 +128,7 @@ class MyUi(QMainWindow):
         if len(indexes) > 0:
             menu = QMenu()
             menu.addAction(QAction("删除", menu, checkable = True))
-            if self.ui.stock_combobox.currentText() == u"K线":
+            if self.ui.stock_combobox.currentText() == "K线":
                 menu.addAction(QAction("Kline", menu, checkable=True))
                 menu.addAction(QAction("Open", menu, checkable=True))
                 menu.addAction(
@@ -137,7 +138,7 @@ class MyUi(QMainWindow):
                 menu.addAction(QAction("Volume", menu, checkable=True))
                 # menu.addAction(QAction("P_change", menu, checkable=True))
                 # menu.addAction(QAction("Turnover",menu,checkable=True))
-            if self.ui.stock_combobox.currentText() == u"复权":
+            if self.ui.stock_combobox.currentText() == "复权":
                 menu.addAction(QAction("Kline", menu, checkable=True))
                 menu.addAction(QAction("Open", menu, checkable=True))
                 menu.addAction(QAction("Close", menu, checkable=True))
@@ -145,9 +146,9 @@ class MyUi(QMainWindow):
                 menu.addAction(QAction("Low", menu, checkable=True))
                 menu.addAction(QAction("Volume", menu, checkable=True))
                 menu.addAction(QAction("Amount", menu, checkable=True))
-            if self.ui.stock_combobox.currentText() == u"分笔数据":
+            if self.ui.stock_combobox.currentText() == "分笔数据":
                 menu.addAction(QAction("分笔", menu, checkable=True))
-            if self.ui.stock_combobox.currentText() == u"历史分钟":
+            if self.ui.stock_combobox.currentText() == "历史分钟":
                 menu.addAction(QAction("Kline", menu, checkable=True))
                 menu.addAction(QAction("Open", menu, checkable=True))
                 menu.addAction(QAction("Close", menu, checkable=True))
@@ -155,13 +156,13 @@ class MyUi(QMainWindow):
                 menu.addAction(QAction("Low", menu, checkable=True))
                 menu.addAction(QAction("Volume", menu, checkable=True))
                 menu.addAction(QAction("Amount", menu, checkable=True))
-            if self.ui.stock_combobox.currentText() == u"十大股东":
+            if self.ui.stock_combobox.currentText() == "十大股东":
                 menu.addAction(QAction("季度饼图", menu, checkable=True))
                 # menu.addAction(QAction("持股比例", menu, checkable=True))
 
             menu.triggered.connect(self.eraseItem)
             item = self.ui.stocks_tree.itemAt(position)
-            menu.triggered.connect(lambda action: self.ListMethodSelected(action, item))
+            menu.triggered.connect(lambda action: self.addActionSelected(action, item))
             menu.exec_(self.ui.stocks_tree.viewport().mapToGlobal(position))
             self.ui.stocks_tree.itemClicked.connect(self.onItemClick(item))
 
@@ -177,20 +178,12 @@ class MyUi(QMainWindow):
             self.eraseItem()
 
 
-    def methodSelected(self, action, collec):
-        #print(action.text()) #Choice
-        #if (self.ui.treewidget.count() == 5):
-         #   self.ui.label.setText("Maximum number of queries")
-         #   return
-        #self.ui.label.setText("")
-        Choice = action.text()
-        Stock = collec
-        #print(collec)  #Stock Name
-        #print(db_origin)  #DataBase name
-        #list1 = [self.tr(Stock+"-"+Choice+"-"+db_origin)]
-        #self.ui.treewidget.addItems(list1)
-        # parent = QTreeWidgetItem(self.ui.treeWidget_2)
-        # parent.setText(0, Stock.decode("utf-8")+"-"+Choice)
+    def addActionSelected(self, action, collec):
+        print(action.text()) #Choice
+        self.choice = action.text()
+        # Stock = collec
+        # parent = QTreeWidgetItem(self.ui.stocks_tree)
+        # parent.setText(0, Stock + "-" + Choice)
         # font = QtGui.QFont("Times", 12, QtGui.QFont.Bold)
         # self.ui.treeWidget_2.setFont(font)
 
@@ -205,17 +198,17 @@ class MyUi(QMainWindow):
         indexes = self.ui.stocks_tree.selectedIndexes()
         item = self.ui.stocks_tree.itemAt(position)
         collec = str(item.text(0).encode("utf-8"))
+        menu = QMenu()
         if len(indexes) > 0:
             level = 0
             index = indexes[0]
             while index.parent().isValid():
                 index = index.parent()
                 level = level + 1
-            menu = QMenu()
             if level ==0:
                 pass
             else:
-                if self.ui.stock_comboboxc.currentText()==u"K线":
+                if self.ui.stock_combobox.currentText()==u"K线":
                     menu.addAction(QAction("Kline", menu, checkable=True))
                     menu.addAction(QAction("Open", menu, checkable=True))
                     menu.addAction(QAction("Close", menu, checkable=True))#open up different menu with different kind of graphs
@@ -224,7 +217,7 @@ class MyUi(QMainWindow):
                     menu.addAction(QAction("Volume", menu, checkable=True))
                     #menu.addAction(QAction("P_change", menu, checkable=True))
                     #menu.addAction(QAction("Turnover",menu,checkable=True))
-                if self.ui.stock_comboboxc.currentText()==u"复权":
+                if self.ui.stock_combobox.currentText()==u"复权":
                     menu.addAction(QAction("Kline", menu, checkable=True))
                     menu.addAction(QAction("Open", menu, checkable=True))
                     menu.addAction(QAction("Close", menu, checkable=True))
@@ -232,9 +225,9 @@ class MyUi(QMainWindow):
                     menu.addAction(QAction("Low", menu, checkable=True))
                     menu.addAction(QAction("Volume", menu, checkable=True))
                     menu.addAction(QAction("Amount", menu, checkable=True))
-                if self.ui.stock_comboboxc.currentText()==u"分笔数据":
+                if self.ui.stock_combobox.currentText()==u"分笔数据":
                     menu.addAction(QAction("分笔", menu, checkable=True))
-                if self.ui.stock_comboboxc.currentText()==u"历史分钟":
+                if self.ui.stock_combobox.currentText()==u"历史分钟":
                     menu.addAction(QAction("Kline", menu, checkable=True))
                     menu.addAction(QAction("Open", menu, checkable=True))
                     menu.addAction(QAction("Close", menu, checkable=True))
@@ -242,11 +235,11 @@ class MyUi(QMainWindow):
                     menu.addAction(QAction("Low", menu, checkable=True))
                     menu.addAction(QAction("Volume", menu, checkable=True))
                     menu.addAction(QAction("Amount", menu, checkable=True))
-                if self.ui.stock_comboboxc.currentText()==u"十大股东":
+                if self.ui.stock_combobox.currentText()==u"十大股东":
                     menu.addAction(QAction("季度饼图", menu, checkable=True))
                     #menu.addAction(QAction("持股比例", menu, checkable=True))
         menu.triggered.connect(lambda action: self.methodSelected(action, collec))
-        menu.exec_(self.ui.treeWidget.viewport().mapToGlobal(position))
+        menu.exec_(self.ui.stocks_tree.viewport().mapToGlobal(position))
 
 app = QApplication(sys.argv)
 w = MyUi()
