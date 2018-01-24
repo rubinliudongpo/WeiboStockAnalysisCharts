@@ -37,14 +37,18 @@ class MyUi(QMainWindow):
         past = date_obj - timedelta(days = 7)
         past_time = datetime.strftime(past, "%Y/%m/%d")
         self.QPastDate = QDate.fromString(past_time,"yyyy/MM/dd")
-        self.QCurrentDate = QDate.fromString(current_date,"yyyy/MM/dd")
+        self.QCurDate = QDate.fromString(current_date,"yyyy/MM/dd")
         self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.stocks_tree.customContextMenuRequested.connect(self.openMenu)
         self.ui.start_date_edit.setDate(self.QPastDate)
-        self.ui.end_date_edit.setDate(self.QCurrentDate)
+        self.ui.end_date_edit.setDate(self.QCurDate)
         self.ui.start_date_edit.setCalendarPopup(True)
         self.ui.end_date_edit.setCalendarPopup(True)
         self.choice = 'Open'
+        self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
+        self.ui.stock_option_combobox.currentIndexChanged.connect(lambda: self.modifycombo(self.QPastDate, self.QCurDate))
+
 
     def _init_db(self):
         self.connection = pymysql.connect(host=DB_HOST,
@@ -69,10 +73,6 @@ class MyUi(QMainWindow):
             dispatcher.execute()
         else:
             print('please input weibo uid here.')
-
-        self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
-        self.ui.stock_combobox.currentIndexChanged.connect(lambda: self.modifycombo(self.QPastDate, self.QCurrentDate))
 
         stock_id_list = list()
         stock_comments_list = list()
@@ -110,7 +110,7 @@ class MyUi(QMainWindow):
         end_date = self.ui.end_date_edit.date()
         end_date = end_date.toPyDate()
         end_date = end_date.strftime("%Y/%m/%d")
-        action = self.ui.stock_combobox.currentText()
+        action = self.ui.stock_option_combobox.currentText()
         action = str(action)
         interval = self.ui.interval_combobox.currentText()
         interval = str(interval)
@@ -128,7 +128,7 @@ class MyUi(QMainWindow):
         if len(indexes) > 0:
             menu = QMenu()
             menu.addAction(QAction("删除", menu, checkable = True))
-            if self.ui.stock_combobox.currentText() == "K线":
+            if self.ui.stock_option_combobox.currentText() == "K线":
                 menu.addAction(QAction("Kline", menu, checkable=True))
                 menu.addAction(QAction("Open", menu, checkable=True))
                 menu.addAction(
@@ -138,7 +138,7 @@ class MyUi(QMainWindow):
                 menu.addAction(QAction("Volume", menu, checkable=True))
                 # menu.addAction(QAction("P_change", menu, checkable=True))
                 # menu.addAction(QAction("Turnover",menu,checkable=True))
-            if self.ui.stock_combobox.currentText() == "复权":
+            if self.ui.stock_option_combobox.currentText() == "复权":
                 menu.addAction(QAction("Kline", menu, checkable=True))
                 menu.addAction(QAction("Open", menu, checkable=True))
                 menu.addAction(QAction("Close", menu, checkable=True))
@@ -146,9 +146,9 @@ class MyUi(QMainWindow):
                 menu.addAction(QAction("Low", menu, checkable=True))
                 menu.addAction(QAction("Volume", menu, checkable=True))
                 menu.addAction(QAction("Amount", menu, checkable=True))
-            if self.ui.stock_combobox.currentText() == "分笔数据":
+            if self.ui.stock_option_combobox.currentText() == "分笔数据":
                 menu.addAction(QAction("分笔", menu, checkable=True))
-            if self.ui.stock_combobox.currentText() == "历史分钟":
+            if self.ui.stock_option_combobox.currentText() == "历史分钟":
                 menu.addAction(QAction("Kline", menu, checkable=True))
                 menu.addAction(QAction("Open", menu, checkable=True))
                 menu.addAction(QAction("Close", menu, checkable=True))
@@ -156,7 +156,7 @@ class MyUi(QMainWindow):
                 menu.addAction(QAction("Low", menu, checkable=True))
                 menu.addAction(QAction("Volume", menu, checkable=True))
                 menu.addAction(QAction("Amount", menu, checkable=True))
-            if self.ui.stock_combobox.currentText() == "十大股东":
+            if self.ui.stock_option_combobox.currentText() == "十大股东":
                 menu.addAction(QAction("季度饼图", menu, checkable=True))
                 # menu.addAction(QAction("持股比例", menu, checkable=True))
 
@@ -178,48 +178,47 @@ class MyUi(QMainWindow):
             self.eraseItem()
 
 
-    def modifycombo(self, QPast, QCurrent):
-        if self.ui.stock_combobox.currentText()==u"复权": #if 复权 is selected, clear all existing queries to avoid value conflict
+    def modifycombo(self, QPast, QCurr):
+        if self.ui.stock_option_combobox.currentText()==u"复权": #if 复权 is selected, clear all existing queries to avoid value conflict
             # self.ui.label_2.show()
-            self.ui.start_date_edit.show()
-            self.ui.end_date_edit.setDate(QPast)
+            self.ui.end_date_edit.show()
+            self.ui.start_date_edit.setDate(QPast)
+            # self.ui.interval_combobox.hide()
             self.ui.interval_combobox.show()
-            self.ui.stock_combobox.show()
-            self.ui.stock_combobox.clear()
-            self.ui.stock_combobox.addItems(["hfq", "qfq"])
+            self.ui.interval_combobox.clear()
+            self.ui.interval_combobox.addItems(["hfq", "qfq"])
             self.ui.stocks_tree.clear()
-        if self.ui.stock_combobox.currentText()==u"K线":
-            # self.ui.label_2.show()
-            self.ui.start_date_edit.show()
-            self.ui.end_date_edit.setDate(QPast)
+        elif self.ui.stock_option_combobox.currentText()==u"K线":
+            self.ui.end_date_label.show()
+            self.ui.end_date_edit.show()
+            self.ui.start_date_edit.setDate(QPast)
+            # self.ui.interval_combobox.show()
             self.ui.interval_combobox.show()
-            self.ui.stock_combobox.show()
-            self.ui.stock_combobox.clear()
-            self.ui.stock_combobox.addItems(["D", "W", "M", "5", "15", "30", "60"])#same as above
+            self.ui.interval_combobox.clear()
+            self.ui.interval_combobox.addItems(["D", "W", "M", "5", "15", "30", "60"])#same as above
             self.ui.stocks_tree.clear()
-        if self.ui.stock_combobox.currentText()==u"分笔数据":
+        elif self.ui.stock_option_combobox.currentText()==u"分笔数据":
             self.ui.interval_combobox.hide()
-            self.ui.stock_combobox.hide()
-            # self.ui.label_2.hide()
-            self.ui.start_date_edit.hide()
-            self.ui.end_date_edit.setDate(QCurrent)
+            # self.ui.stock_combobox.hide()
+            self.ui.end_date_label.hide()
+            self.ui.end_date_edit.hide()
+            self.ui.start_date_edit.setDate(QCurr)
             self.ui.stocks_tree.clear()
-        if self.ui.stock_combobox.currentText()==u"历史分钟":
+        elif self.ui.stock_option_combobox.currentText()==u"历史分钟":
+            # self.ui.interval_combobox.hide()
+            self.ui.interval_combobox.show()
+            self.ui.interval_combobox.clear()
+            self.ui.interval_combobox.addItems(["1min","5min","15min","30min","60min"])
+            self.ui.end_date_label.hide()
+            self.ui.end_date_edit.hide()
+            self.ui.start_date_edit.setDate(QCurr)
+            self.ui.stocks_tree.clear()
+        elif self.ui.stock_option_combobox.currentText()==u"十大股东":
+            # self.ui.interval_combobox.hide()
             self.ui.interval_combobox.hide()
-            self.ui.stock_combobox.show()
-            self.ui.stock_combobox.clear()
-            self.ui.stock_combobox.addItems(["1min","5min","15min","30min","60min"])
-            # self.ui.label_2.hide()
-            self.ui.start_date_edit.hide()
-            self.ui.end_date_edit.setDate(QCurrent)
+            self.ui.end_date_label.hide()
+            self.ui.end_date_edit.hide()
             self.ui.stocks_tree.clear()
-        if self.ui.stock_combobox.currentText()==u"十大股东":
-            self.ui.interval_combobox.hide()
-            self.ui.stock_combobox.hide()
-            # self.ui.label_2.hide()
-            self.ui.start_date_edit.hide()
-            self.ui.stocks_tree.clear()
-
 
     def addActionSelected(self, action, collec):
         print(action.text()) #Choice
@@ -251,7 +250,7 @@ class MyUi(QMainWindow):
             if level ==0:
                 pass
             else:
-                if self.ui.stock_combobox.currentText()==u"K线":
+                if self.ui.stock_option_combobox.currentText()==u"K线":
                     menu.addAction(QAction("Kline", menu, checkable=True))
                     menu.addAction(QAction("Open", menu, checkable=True))
                     menu.addAction(QAction("Close", menu, checkable=True))#open up different menu with different kind of graphs
@@ -260,7 +259,7 @@ class MyUi(QMainWindow):
                     menu.addAction(QAction("Volume", menu, checkable=True))
                     #menu.addAction(QAction("P_change", menu, checkable=True))
                     #menu.addAction(QAction("Turnover",menu,checkable=True))
-                if self.ui.stock_combobox.currentText()==u"复权":
+                if self.ui.stock_option_combobox.currentText()==u"复权":
                     menu.addAction(QAction("Kline", menu, checkable=True))
                     menu.addAction(QAction("Open", menu, checkable=True))
                     menu.addAction(QAction("Close", menu, checkable=True))
@@ -268,9 +267,9 @@ class MyUi(QMainWindow):
                     menu.addAction(QAction("Low", menu, checkable=True))
                     menu.addAction(QAction("Volume", menu, checkable=True))
                     menu.addAction(QAction("Amount", menu, checkable=True))
-                if self.ui.stock_combobox.currentText()==u"分笔数据":
+                if self.ui.stock_option_combobox.currentText()==u"分笔数据":
                     menu.addAction(QAction("分笔", menu, checkable=True))
-                if self.ui.stock_combobox.currentText()==u"历史分钟":
+                if self.ui.stock_option_combobox.currentText()==u"历史分钟":
                     menu.addAction(QAction("Kline", menu, checkable=True))
                     menu.addAction(QAction("Open", menu, checkable=True))
                     menu.addAction(QAction("Close", menu, checkable=True))
@@ -278,7 +277,7 @@ class MyUi(QMainWindow):
                     menu.addAction(QAction("Low", menu, checkable=True))
                     menu.addAction(QAction("Volume", menu, checkable=True))
                     menu.addAction(QAction("Amount", menu, checkable=True))
-                if self.ui.stock_combobox.currentText()==u"十大股东":
+                if self.ui.stock_option_combobox.currentText()==u"十大股东":
                     menu.addAction(QAction("季度饼图", menu, checkable=True))
                     #menu.addAction(QAction("持股比例", menu, checkable=True))
         menu.triggered.connect(lambda action: self.addActionSelected(action, collec))
