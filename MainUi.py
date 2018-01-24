@@ -36,15 +36,15 @@ class MyUi(QMainWindow):
         date_obj = datetime.strptime(current_date, "%Y/%m/%d")
         past = date_obj - timedelta(days = 7)
         past_time = datetime.strftime(past, "%Y/%m/%d")
-        QPast = QDate.fromString(past_time,"yyyy/MM/dd")
-        Qcurdate = QDate.fromString(current_date,"yyyy/MM/dd")
+        self.QPastDate = QDate.fromString(past_time,"yyyy/MM/dd")
+        self.QCurrentDate = QDate.fromString(current_date,"yyyy/MM/dd")
         self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.stocks_tree.customContextMenuRequested.connect(self.openMenu)
-        self.ui.start_date_edit.setDate(QPast)
-        self.ui.end_date_edit.setDate(Qcurdate)
+        self.ui.start_date_edit.setDate(self.QPastDate)
+        self.ui.end_date_edit.setDate(self.QCurrentDate)
         self.ui.start_date_edit.setCalendarPopup(True)
         self.ui.end_date_edit.setCalendarPopup(True)
-        self.choice = None
+        self.choice = 'Open'
 
     def _init_db(self):
         self.connection = pymysql.connect(host=DB_HOST,
@@ -72,6 +72,7 @@ class MyUi(QMainWindow):
 
         self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
+        self.ui.stock_combobox.currentIndexChanged.connect(lambda: self.modifycombo(self.QPastDate, self.QCurrentDate))
 
         stock_id_list = list()
         stock_comments_list = list()
@@ -96,8 +97,7 @@ class MyUi(QMainWindow):
             child.setText(0, stock_id_list[i] + "-" + stock_comments_list[i])
         self.ui.stocks_tree.expandToDepth(0)
 
-
-    def onItemClick(self, item):
+    def onItemClick(self):
         text = self.ui.stocks_tree.currentItem().text(0)
         stock_id_pattern = re.compile("(s[h|z]\d{6})-.*")
         stock_id = stock_id_pattern.search(text)
@@ -164,7 +164,7 @@ class MyUi(QMainWindow):
             item = self.ui.stocks_tree.itemAt(position)
             menu.triggered.connect(lambda action: self.addActionSelected(action, item))
             menu.exec_(self.ui.stocks_tree.viewport().mapToGlobal(position))
-            self.ui.stocks_tree.itemClicked.connect(self.onItemClick(item))
+            self.ui.stocks_tree.itemClicked.connect(self.onItemClick())
 
     def ListMethodSelected(self, action, item):
         if action.text() == "Delete":
@@ -176,6 +176,49 @@ class MyUi(QMainWindow):
             list1 = [self.tr(collec)]
             self.ui.listwidget.addItems(list1)
             self.eraseItem()
+
+
+    def modifycombo(self, QPast, QCurrent):
+        if self.ui.stock_combobox.currentText()==u"复权": #if 复权 is selected, clear all existing queries to avoid value conflict
+            # self.ui.label_2.show()
+            self.ui.start_date_edit.show()
+            self.ui.end_date_edit.setDate(QPast)
+            self.ui.interval_combobox.show()
+            self.ui.stock_combobox.show()
+            self.ui.stock_combobox.clear()
+            self.ui.stock_combobox.addItems(["hfq", "qfq"])
+            self.ui.stocks_tree.clear()
+        if self.ui.stock_combobox.currentText()==u"K线":
+            # self.ui.label_2.show()
+            self.ui.start_date_edit.show()
+            self.ui.end_date_edit.setDate(QPast)
+            self.ui.interval_combobox.show()
+            self.ui.stock_combobox.show()
+            self.ui.stock_combobox.clear()
+            self.ui.stock_combobox.addItems(["D", "W", "M", "5", "15", "30", "60"])#same as above
+            self.ui.stocks_tree.clear()
+        if self.ui.stock_combobox.currentText()==u"分笔数据":
+            self.ui.interval_combobox.hide()
+            self.ui.stock_combobox.hide()
+            # self.ui.label_2.hide()
+            self.ui.start_date_edit.hide()
+            self.ui.end_date_edit.setDate(QCurrent)
+            self.ui.stocks_tree.clear()
+        if self.ui.stock_combobox.currentText()==u"历史分钟":
+            self.ui.interval_combobox.hide()
+            self.ui.stock_combobox.show()
+            self.ui.stock_combobox.clear()
+            self.ui.stock_combobox.addItems(["1min","5min","15min","30min","60min"])
+            # self.ui.label_2.hide()
+            self.ui.start_date_edit.hide()
+            self.ui.end_date_edit.setDate(QCurrent)
+            self.ui.stocks_tree.clear()
+        if self.ui.stock_combobox.currentText()==u"十大股东":
+            self.ui.interval_combobox.hide()
+            self.ui.stock_combobox.hide()
+            # self.ui.label_2.hide()
+            self.ui.start_date_edit.hide()
+            self.ui.stocks_tree.clear()
 
 
     def addActionSelected(self, action, collec):
@@ -238,7 +281,7 @@ class MyUi(QMainWindow):
                 if self.ui.stock_combobox.currentText()==u"十大股东":
                     menu.addAction(QAction("季度饼图", menu, checkable=True))
                     #menu.addAction(QAction("持股比例", menu, checkable=True))
-        menu.triggered.connect(lambda action: self.methodSelected(action, collec))
+        menu.triggered.connect(lambda action: self.addActionSelected(action, collec))
         menu.exec_(self.ui.stocks_tree.viewport().mapToGlobal(position))
 
 app = QApplication(sys.argv)

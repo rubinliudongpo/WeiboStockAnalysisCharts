@@ -24,7 +24,6 @@ except AttributeError:
     def _translate(context, text, dis_ambig):
         return QtWidgets.QApplication.translate(context, text, dis_ambig)
 
-
 class Ui_Main_Window(object):
     def setup_ui(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -36,12 +35,23 @@ class Ui_Main_Window(object):
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setContentsMargins(15, 15, 15, 15)
         self.gridLayout.setObjectName("gridLayout")
-        self.weibo_id_label = QtWidgets.QLabel(self.centralwidget)
+        self.splitter_0 = QtWidgets.QSplitter(self.centralwidget)
+        self.splitter_0.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter_0.setObjectName("splitter_0")
+        self.weibo_id_label = QtWidgets.QLabel(self.splitter_0)
         self.weibo_id_label.setObjectName("Weibo ID Label")
-        self.gridLayout.addWidget(self.weibo_id_label, 0, 0, 1, 1)
-        self.search_edit_text = QtWidgets.QLineEdit(self.centralwidget)
+        self.search_edit_text = QtWidgets.QLineEdit(self.splitter_0)
         self.search_edit_text.setObjectName("lineEdit")
-        self.gridLayout.addWidget(self.search_edit_text, 1, 0, 1, 2)
+        self.stock_option_combobox = QtWidgets.QComboBox(self.splitter_0)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.stock_option_combobox.sizePolicy().hasHeightForWidth())
+        self.stock_option_combobox.setSizePolicy(sizePolicy)
+        self.stock_option_combobox.setObjectName("stock_option_combobox")
+        self.stock_option_combobox.addItems(["K线", "复权", "分笔数据", "历史分钟", "十大股东"])
+        self.gridLayout.addWidget(self.splitter_0, 0, 1, 1, 1)
+
         self.start_date_label = QtWidgets.QLabel(self.centralwidget)
         self.start_date_label.setObjectName("Start Date")
         self.gridLayout.addWidget(self.start_date_label, 2, 0, 1, 1)
