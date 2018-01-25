@@ -44,7 +44,11 @@ class MyUi(QMainWindow):
         self.ui.end_date_edit.setDate(self.QCurDate)
         self.ui.start_date_edit.setCalendarPopup(True)
         self.ui.end_date_edit.setCalendarPopup(True)
+        self.ui.search_edit_text.setText("6004376285")
         self.choice = 'Open'
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "WeiboData/Gui/render.html")) #path to read html file
+        local_url = QUrl.fromLocalFile(file_path)
+        self.ui.webView.load(local_url)
         self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
         self.ui.stock_option_combobox.currentIndexChanged.connect(lambda: self.modifycombo(self.QPastDate, self.QCurDate))
@@ -81,11 +85,10 @@ class MyUi(QMainWindow):
                 cursor.execute(STOCK_SEARCH_BY_WEIBOID, [weibo_id])
                 search_results = cursor.fetchall()
                 if len(search_results) > 0:
-
                     for row in search_results:
-                        print(row[3], row[4], row[5])
-                        stock_id = row[3]
-                        stock_comments = row[4] + "" + row[5]
+                        print(row[3], row[4], row[5], row[6])
+                        stock_id = row[4] + "-" + row[3]
+                        stock_comments = row[5] + "" + row[6]
                         stock_id_list.append(stock_id)
                         stock_comments_list.append(stock_comments)
         except pymysql.DatabaseError:

@@ -122,6 +122,12 @@ class WeiboSpider(object):
                             stock_recommendation_id = stock_recommendation_id_pattern.search(weibos)
                             if stock_recommendation_id:
                                 temp_list.append(stock_recommendation_id.group(1))
+                                stock_name_pattern = re.compile(".*#([\u4e00-\u9fa5]{3,})\ss[h|z]\d{6}\[股票\]#")
+                                stock_name = stock_name_pattern.search(weibos)
+                                if stock_name:
+                                    temp_list.append(stock_name.group(1).replace(u"\u200b", "").
+                                                     replace(u"\xa0", "").lstrip().rstrip().lstrip("\n").rstrip("\n"))
+
                                 stock_comment_ahead_pattern = re.compile("(.*)#[\u4e00-\u9fa5]{3,}\ss[h|z]\d{6}\[股票\]#")
                                 stock_comment_ahead = stock_comment_ahead_pattern.search(weibos)
                                 if stock_comment_ahead:
@@ -135,7 +141,7 @@ class WeiboSpider(object):
                                 print(temp_list)
                                 temp_list.append(str(int(time.time())))
                                 with self.connection.cursor() as cursor:
-                                    cursor.execute(STOCK_SEARCH_SQL, [temp_list[0], temp_list[2], temp_list[3], temp_list[4]])
+                                    cursor.execute(STOCK_SEARCH_SQL, [temp_list[0], temp_list[2], temp_list[3], temp_list[4], temp_list[5]])
                                     search_result = cursor.fetchall()
                                     search_result_length = len(search_result)
                                     if search_result_length == 0:

@@ -26,14 +26,15 @@ def calculate_month(data, Daycount):
 
 def stock_render_page(stock_info, start_date, end_date, interval, width, height):
     page = Page()
-    stock_id = stock_info.split('-', 1)[0]
-    action = stock_info.split('-', 1)[1]
+    stock_name = stock_info.split('-', 1)[0]
+    stock_id = stock_info.split('-', 1)[1]
+    action = stock_info.split('-', 1)[2]
     a = generate_stock_line(stock_id, action, start_date, end_date, interval)  # stock number, Type, startdate, enddate, 30 or 15 or days
     if a is None:
         return
     if action == "Kline":
         time, open, close, low, high = zip(*a)  # get time from returned dictionary
-    else:
+    else:git
         time, target = zip(*a)
         a = [time, target]
     if action != "Kline":
