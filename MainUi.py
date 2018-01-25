@@ -102,8 +102,10 @@ class MyUi(QMainWindow):
 
     def onItemClick(self):
         text = self.ui.stocks_tree.currentItem().text(0)
+        stock_name_pattern = re.compile("([\u4e00-\u9fa5]{3,})-.*")
         stock_id_pattern = re.compile("(s[h|z]\d{6})-.*")
         stock_id = stock_id_pattern.search(text)
+        stock_name = stock_name_pattern.search(text)
         QMessageBox.information(self, "股票提示", text)
         width = self.ui.webView.width()
         height = self.ui.webView.height()
@@ -117,7 +119,7 @@ class MyUi(QMainWindow):
         action = str(action)
         interval = self.ui.interval_combobox.currentText()
         interval = str(interval)
-        stock_info = stock_id.group(1) + '-' + self.choice
+        stock_info = stock_name.group(1) + '-' + stock_id.group(1) + '-' + self.choice
         stock_render_page(stock_info, start_date, end_date, interval, width, height)
         self.ui.webView.reload()
         self.ui.webView.repaint()

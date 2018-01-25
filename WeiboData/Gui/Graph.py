@@ -26,29 +26,29 @@ def calculate_month(data, Daycount):
 
 def stock_render_page(stock_info, start_date, end_date, interval, width, height):
     page = Page()
-    stock_name = stock_info.split('-', 1)[0]
-    stock_id = stock_info.split('-', 1)[1]
-    action = stock_info.split('-', 1)[2]
+    stock_name = stock_info.split('-', 2)[0]
+    stock_id = stock_info.split('-', 2)[1]
+    action = stock_info.split('-', 2)[2]
     a = generate_stock_line(stock_id, action, start_date, end_date, interval)  # stock number, Type, startdate, enddate, 30 or 15 or days
     if a is None:
         return
     if action == "Kline":
         time, open, close, low, high = zip(*a)  # get time from returned dictionary
-    else:git
+    else:
         time, target = zip(*a)
         a = [time, target]
     if action != "Kline":
         if len(time[0]) == 4 and time[0][2] == "bar":  # for 分笔data
             overlap = Overlap()
             form = [e[1] for e in a]
-            bar = Bar("分笔", width=width * 10 / 11, height=(height * 10 / 11))
-            bar.add("分笔", time, form, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
+            bar = Bar(stock_name + "-" + stock_id, width=width * 10 / 11, height=(height * 10 / 11))
+            bar.add(stock_name + "-" + stock_id, time, form, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
                     datazoom_type="slider")
             overlap.add(bar)
 
-            line = Line("price", width=width * 10 / 11, height=(height * 10 / 11))
+            line = Line(stock_name + "price", width=width * 10 / 11, height=(height * 10 / 11))
             price = [e[3] for e in a]
-            line.add("price", time, price, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
+            line.add(stock_name + "price", time, price, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
                      datazoom_type="slider",
                      yaxis_type="value")
             overlap.add(line, yaxis_index=1, is_add_yaxis=True)
@@ -83,31 +83,31 @@ def stock_render_page(stock_info, start_date, end_date, interval, width, height)
 
             # need more statement
         else:
-            line = Line("分笔", width=width * 10 / 11, height=(height * 10 / 11))
-            line.add("分笔", time, target, is_datazoom_show=True, datazoom_type="slider", yaxis_min="dataMin",
+            line = Line(stock_name + "-" + stock_id, width=width * 10 / 11, height=(height * 10 / 11))
+            line.add(stock_name + "-" + stock_id, time, target, is_datazoom_show=True, datazoom_type="slider", yaxis_min="dataMin",
                      yaxis_max="dataMax")
             page.add(line)
             page.add(line)
     else:
         overlap = Overlap()#for k线
         candle = [open, close, low, high]
-        candlestick = Kline("分笔", width=width * 10 / 11, height=(height * 10 / 11))
-        candlestick.add("分笔", time, candle, is_datazoom_show=True, datazoom_type="slider", yaxis_interval=1)
+        candlestick = Kline(stock_name + "-" + stock_id, width=width * 10 / 11, height=(height * 10 / 11))
+        candlestick.add(stock_name + "-" + stock_id, time, candle, is_datazoom_show=True, datazoom_type="slider", yaxis_interval=1)
         overlap.add(candlestick)
         if len(close) > 10:
             ma10 = calculate_month(close, 10)
             line1 = Line(title_color="#C0C0C0")
-            line1.add("MA10", time, ma10)
+            line1.add(stock_name + "-" + "MA10", time, ma10)
             overlap.add(line1)
         if len(close) > 20:
             ma20 = calculate_month(close, 20)
             line2 = Line(title_color="#C0C0C0")
-            line2.add("MA20", time, ma20)
+            line2.add(stock_name + "-" + "MA20", time, ma20)
             overlap.add(line2)
         if len(close) > 30:
             ma30 = calculate_month(close, 30)
             line3 = Line(title_color="#C0C0C0")
-            line3.add("MA30", time, ma30)
+            line3.add(stock_name + "-" + "MA30", time, ma30)
             overlap.add(line3)
         page.add(overlap)
     page.render()
