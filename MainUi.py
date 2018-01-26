@@ -49,8 +49,6 @@ class MyUi(QMainWindow):
         file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "WeiboData/Gui/render.html")) #path to read html file
         local_url = QUrl.fromLocalFile(file_path)
         self.ui.webView.load(local_url)
-        self.ui.stocks_tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
         self.ui.stock_option_combobox.currentIndexChanged.connect(lambda: self.modifycombo(self.QPastDate, self.QCurDate))
 
     def _init_db(self):
@@ -123,52 +121,6 @@ class MyUi(QMainWindow):
         self.ui.webView.reload()
         self.ui.webView.repaint()
         self.ui.webView.update()
-
-    def openWidgetMenu(self,position):
-        indexes = self.ui.stocks_tree.selectedIndexes()
-        item = self.ui.stocks_tree.itemAt(position)
-        if item == None:
-            return
-        if len(indexes) > 0:
-            menu = QMenu()
-            menu.addAction(QAction("删除", menu, checkable = True))
-            if self.ui.stock_option_combobox.currentText() == "K线":
-                menu.addAction(QAction("Kline", menu, checkable=True))
-                menu.addAction(QAction("Open", menu, checkable=True))
-                menu.addAction(
-                    QAction("Close", menu, checkable=True))  # open up different menu with different kind of graphs
-                menu.addAction(QAction("High", menu, checkable=True))
-                menu.addAction(QAction("Low", menu, checkable=True))
-                menu.addAction(QAction("Volume", menu, checkable=True))
-                # menu.addAction(QAction("P_change", menu, checkable=True))
-                # menu.addAction(QAction("Turnover",menu,checkable=True))
-            if self.ui.stock_option_combobox.currentText() == "复权":
-                menu.addAction(QAction("Kline", menu, checkable=True))
-                menu.addAction(QAction("Open", menu, checkable=True))
-                menu.addAction(QAction("Close", menu, checkable=True))
-                menu.addAction(QAction("High", menu, checkable=True))
-                menu.addAction(QAction("Low", menu, checkable=True))
-                menu.addAction(QAction("Volume", menu, checkable=True))
-                menu.addAction(QAction("Amount", menu, checkable=True))
-            if self.ui.stock_option_combobox.currentText() == "分笔数据":
-                menu.addAction(QAction("分笔", menu, checkable=True))
-            if self.ui.stock_option_combobox.currentText() == "历史分钟":
-                menu.addAction(QAction("Kline", menu, checkable=True))
-                menu.addAction(QAction("Open", menu, checkable=True))
-                menu.addAction(QAction("Close", menu, checkable=True))
-                menu.addAction(QAction("High", menu, checkable=True))
-                menu.addAction(QAction("Low", menu, checkable=True))
-                menu.addAction(QAction("Volume", menu, checkable=True))
-                menu.addAction(QAction("Amount", menu, checkable=True))
-            if self.ui.stock_option_combobox.currentText() == "十大股东":
-                menu.addAction(QAction("季度饼图", menu, checkable=True))
-                # menu.addAction(QAction("持股比例", menu, checkable=True))
-
-            menu.triggered.connect(self.eraseItem)
-            item = self.ui.stocks_tree.itemAt(position)
-            menu.triggered.connect(lambda action: self.addActionSelected(action, item))
-            menu.exec_(self.ui.stocks_tree.viewport().mapToGlobal(position))
-            self.ui.stocks_tree.itemClicked.connect(self.onItemClick())
 
     def ListMethodSelected(self, action, item):
         if action.text() == "Delete":
