@@ -53,7 +53,6 @@ class MyUi(QMainWindow):
         self.ui.stocks_tree.customContextMenuRequested.connect(self.openWidgetMenu)
         self.ui.stock_option_combobox.currentIndexChanged.connect(lambda: self.modifycombo(self.QPastDate, self.QCurDate))
 
-
     def _init_db(self):
         self.connection = pymysql.connect(host=DB_HOST,
         port=DB_PORT, user=DB_USER, passwd=DB_PASSWD, db=DB_NAME, charset=DB_CHARSET)
@@ -192,7 +191,7 @@ class MyUi(QMainWindow):
             self.ui.interval_combobox.show()
             self.ui.interval_combobox.clear()
             self.ui.interval_combobox.addItems(["hfq", "qfq"])
-            self.ui.stocks_tree.clear()
+            # self.ui.stocks_tree.clear()
         elif self.ui.stock_option_combobox.currentText()==u"K线":
             self.ui.end_date_label.show()
             self.ui.end_date_edit.show()
@@ -201,14 +200,14 @@ class MyUi(QMainWindow):
             self.ui.interval_combobox.show()
             self.ui.interval_combobox.clear()
             self.ui.interval_combobox.addItems(["D", "W", "M", "5", "15", "30", "60"])#same as above
-            self.ui.stocks_tree.clear()
+            # self.ui.stocks_tree.clear()
         elif self.ui.stock_option_combobox.currentText()==u"分笔数据":
             self.ui.interval_combobox.hide()
             # self.ui.stock_combobox.hide()
             self.ui.end_date_label.hide()
             self.ui.end_date_edit.hide()
             self.ui.start_date_edit.setDate(QCurr)
-            self.ui.stocks_tree.clear()
+            # self.ui.stocks_tree.clear()
         elif self.ui.stock_option_combobox.currentText()==u"历史分钟":
             # self.ui.interval_combobox.hide()
             self.ui.interval_combobox.show()
@@ -217,13 +216,13 @@ class MyUi(QMainWindow):
             self.ui.end_date_label.hide()
             self.ui.end_date_edit.hide()
             self.ui.start_date_edit.setDate(QCurr)
-            self.ui.stocks_tree.clear()
+            # self.ui.stocks_tree.clear()
         elif self.ui.stock_option_combobox.currentText()==u"十大股东":
             # self.ui.interval_combobox.hide()
             self.ui.interval_combobox.hide()
             self.ui.end_date_label.hide()
             self.ui.end_date_edit.hide()
-            self.ui.stocks_tree.clear()
+            # self.ui.stocks_tree.clear()
 
     def addActionSelected(self, action, collec):
         print(action.text()) #Choice

@@ -41,14 +41,14 @@ def stock_render_page(stock_info, start_date, end_date, interval, width, height)
         if len(time[0]) == 4 and time[0][2] == "bar":  # for 分笔data
             overlap = Overlap()
             form = [e[1] for e in a]
-            bar = Bar(stock_name + "-" + stock_id, width=width * 10 / 11, height=(height * 10 / 11))
-            bar.add(stock_name + "-" + stock_id, time, form, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
+            bar = Bar(stock_name + "-" + stock_id + "-" + action, width=width * 10 / 11, height=(height * 10 / 11))
+            bar.add(stock_name + "-" + stock_id  + "-" + action, time, form, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
                     datazoom_type="slider")
             overlap.add(bar)
 
-            line = Line(stock_name + "price", width=width * 10 / 11, height=(height * 10 / 11))
+            line = Line(stock_name + "price" + "-" + action, width=width * 10 / 11, height=(height * 10 / 11))
             price = [e[3] for e in a]
-            line.add(stock_name + "price", time, price, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
+            line.add(stock_name + "price" + "-" + action, time, price, yaxis_min="dataMin", yaxis_max="dataMax", is_datazoom_show=True,
                      datazoom_type="slider",
                      yaxis_type="value")
             overlap.add(line, yaxis_index=1, is_add_yaxis=True)
@@ -60,15 +60,12 @@ def stock_render_page(stock_info, start_date, end_date, interval, width, height)
             value_array = [d[1] for d in a]
             quarter = [e[2] for e in a]
             num = a[0][4]
-
             for x in range(0, num / 10):
                 list1 = value_array[x]
                 names = name_array[x]
                 quarters = quarter[x][0]
-
                 for idx, val in enumerate(list1):
                     list1[idx] = float(val)
-
                 pie = Pie("前十股东", width=width * 10 / 11, height=(height * 10 / 11))
                 pie.add("前十股东", names, list1, radius=[30, 55], is_legend_show=False,
                         is_label_show=True, label_formatter="{b}: {c}\n{d}%")
@@ -83,31 +80,31 @@ def stock_render_page(stock_info, start_date, end_date, interval, width, height)
 
             # need more statement
         else:
-            line = Line(stock_name + "-" + stock_id, width=width * 10 / 11, height=(height * 10 / 11))
-            line.add(stock_name + "-" + stock_id, time, target, is_datazoom_show=True, datazoom_type="slider", yaxis_min="dataMin",
+            line = Line(stock_name + "-" + stock_id + "-" + action, width=width * 10 / 11, height=(height * 10 / 11))
+            line.add(stock_name + "-" + stock_id + "-" + action, time, target, is_datazoom_show=True, datazoom_type="slider", yaxis_min="dataMin",
                      yaxis_max="dataMax")
             page.add(line)
             page.add(line)
     else:
         overlap = Overlap()#for k线
         candle = [open, close, low, high]
-        candlestick = Kline(stock_name + "-" + stock_id, width=width * 10 / 11, height=(height * 10 / 11))
-        candlestick.add(stock_name + "-" + stock_id, time, candle, is_datazoom_show=True, datazoom_type="slider", yaxis_interval=1)
+        candlestick = Kline(stock_name + "-" + stock_id + "-" + action, width=width * 10 / 11, height=(height * 10 / 11))
+        candlestick.add(stock_name + "-" + stock_id + "-" + action, time, candle, is_datazoom_show=True, datazoom_type="slider", yaxis_interval=1)
         overlap.add(candlestick)
         if len(close) > 10:
             ma10 = calculate_month(close, 10)
             line1 = Line(title_color="#C0C0C0")
-            line1.add(stock_name + "-" + "MA10", time, ma10)
+            line1.add(stock_name + "-" + "MA10" + "-" + action, time, ma10)
             overlap.add(line1)
         if len(close) > 20:
             ma20 = calculate_month(close, 20)
             line2 = Line(title_color="#C0C0C0")
-            line2.add(stock_name + "-" + "MA20", time, ma20)
+            line2.add(stock_name + "-" + "MA20" + "-" + action, time, ma20)
             overlap.add(line2)
         if len(close) > 30:
             ma30 = calculate_month(close, 30)
             line3 = Line(title_color="#C0C0C0")
-            line3.add(stock_name + "-" + "MA30", time, ma30)
+            line3.add(stock_name + "-" + "MA30" + "-" + action, time, ma30)
             overlap.add(line3)
         page.add(overlap)
     page.render()
